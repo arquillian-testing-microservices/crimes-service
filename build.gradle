@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+group 'org.lordofthejars.villains'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "io.vertx:vertx-core:3.4.1"
+    compile "io.vertx:vertx-web:3.4.1"
+    compile "com.h2database:h2:1.4.194"
+    compile "io.vertx:vertx-jdbc-client:3.4.1"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+mainClassName = 'io.vertx.core.Launcher'
+
+shadowJar {
+    archiveName = "crimes-service-${version}"
+    manifest {
+        attributes 'Main-Verticle': 'org.lordofthejars.villains.crimes.CrimesVerticle'
+    }
+    mergeServiceFiles {
+        include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
