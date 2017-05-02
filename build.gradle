@@ -1,3 +1,14 @@
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.bmuschko:gradle-docker-plugin:3.0.6'
+    }
+}
 plugins {
     id 'java'
     id 'application'
@@ -24,11 +35,27 @@ dependencies {
 mainClassName = 'io.vertx.core.Launcher'
 
 shadowJar {
-    archiveName = "crimes-service-${version}"
+    archiveName = "crimes-service-${version}.jar"
     manifest {
         attributes 'Main-Verticle': 'org.lordofthejars.villains.crimes.CrimesVerticle'
     }
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
     }
+}
+
+apply plugin: 'com.bmuschko.docker-remote-api'
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+docker {
+    if (System.env.containsKey('DOCKER_HOST') && System.env.containsKey('DOCKER_CERT_PATH')) {
+        url = System.env.DOCKER_HOST.replace("tcp", "https")
+        certPath = new File(System.env.DOCKER_CERT_PATH)
+    }
+}
+
+task buildImage(type: DockerBuildImage) {
+    dependsOn shadowJar
+    inputDir = project.rootDir
+    tag = "crimes:${project.version}"
 }
