@@ -1,5 +1,6 @@
 package org.lordofthejars.villains.crimes;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -35,6 +36,8 @@ public class CrimesVerticle extends AbstractVerticle {
             .put("user", "sa")
             .put("password", "")
             .put("max_pool_size", 30));
+
+        Json.prettyMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 
         startBackend(
             (connection) -> createSomeData(connection,
@@ -113,7 +116,8 @@ public class CrimesVerticle extends AbstractVerticle {
             jdbcClient.getConnection( ar -> {
                 SQLConnection connection = ar.result();
                 connection.query("SELECT name, villain, wiki FROM crime", result -> {
-                    List<JsonObject> crimes = result.result().getRows().stream()
+                    List<Crime> crimes = result.result().getRows().stream()
+                                            .map(Crime::new)
                                             .collect(Collectors.toList());
                     if (crimes.size() == 0) {
                         sendError(404, response);
