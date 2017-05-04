@@ -27,17 +27,35 @@ repositories {
 dependencies {
     compile "io.vertx:vertx-core:3.4.1"
     compile "io.vertx:vertx-web:3.4.1"
+    compile "io.vertx:vertx-rx-java:3.4.1"
     compile "com.h2database:h2:1.4.194"
     compile "io.vertx:vertx-jdbc-client:3.4.1"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
 mainClassName = 'io.vertx.core.Launcher'
+def mainVerticleName = 'org.lordofthejars.villains.crimes.CrimesVerticle'
+
+// Vert.x watches for file changes in all subdirectories
+// of src/ but only for files with .java extension
+def watchForChange = 'src/**/*.java'
+
+// Vert.x will call this task on changes
+def doOnChange
+if (System.getProperty("os.name").toLowerCase().contains("windows")) {
+    doOnChange = '.\\gradlew classes'
+} else {
+    doOnChange = './gradlew classes'
+}
+
+run {
+    args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+}
 
 shadowJar {
     archiveName = "crimes-service-${version}.jar"
     manifest {
-        attributes 'Main-Verticle': 'org.lordofthejars.villains.crimes.CrimesVerticle'
+        attributes 'Main-Verticle': mainVerticleName
     }
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
