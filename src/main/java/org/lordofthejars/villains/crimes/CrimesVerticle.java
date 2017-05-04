@@ -45,9 +45,15 @@ public class CrimesVerticle extends AbstractVerticle {
                 Router router = Router.router(vertx);
                 router.route().handler(BodyHandler.create());
                 router.get("/crimes/:villain").handler(this::handleGetCrimes);
+                router.get("/healthz").handler(this::handleHeatchCheck);
                 return vertx.createHttpServer().requestHandler(router::accept).rxListen(8080);
             })
             .subscribe(RxHelper.toSubscriber(fut.mapEmpty()));
+    }
+
+    private void handleHeatchCheck(RoutingContext routingContext){
+        HttpServerResponse response = routingContext.response();
+        response.setStatusCode(200).end();
     }
 
     private void handleGetCrimes(RoutingContext routingContext) {
