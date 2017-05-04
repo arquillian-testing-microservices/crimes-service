@@ -1,6 +1,8 @@
-FROM openjdk:8-jdk-alpine
-VOLUME /tmp
-ADD build/libs/crimes-service-*.jar app.jar
-RUN sh -c 'touch /app.jar'
-ENV JAVA_OPTS=""
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -jar /app.jar" ]
+FROM fabric8/java-jboss-openjdk8-jdk:1.2.5
+
+ENV JAVA_APP_JAR app.jar
+ENV AB_OFF true
+
+EXPOSE 8080
+
+ADD build/libs/crimes-service-*.jar /deployments/app.jar
