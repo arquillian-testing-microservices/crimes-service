@@ -7,6 +7,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.AbstractVerticle;
+import io.vertx.rxjava.core.buffer.Buffer;
 import io.vertx.rxjava.core.http.HttpServerResponse;
 import io.vertx.rxjava.ext.jdbc.JDBCClient;
 import io.vertx.rxjava.ext.web.Router;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 public class CrimesVerticle extends AbstractVerticle {
 
     private JDBCClient jdbcClient;
-    private Properties buildProperties = new Properties();
 
     public static void main(String args[]) {
         Vertx vertx = Vertx.vertx();
@@ -30,8 +30,6 @@ public class CrimesVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future<Void> fut) {
-
-        loadBuildInfo();
 
         jdbcClient = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
@@ -64,19 +62,12 @@ public class CrimesVerticle extends AbstractVerticle {
             .subscribe(RxHelper.toSubscriber(fut.mapEmpty()));
     }
 
-    private void loadBuildInfo() {
-        final InputStream buildInfo = CrimesVerticle.class.getResourceAsStream("/build-info.properties");
-        if (buildInfo != null) {
-            try {
-                buildProperties.load(buildInfo);
-            } catch (IOException e) {
-            }
-        }
-    }
-
     private void handleGetVersion(RoutingContext routingContext) {
         HttpServerResponse response = routingContext.response();
-        response.setStatusCode(200).putHeader("content-type", "text/plain").end(this.buildProperties.containsKey("version") ? this.buildProperties.getProperty("version") : "");
+        vertx.fileSystem()
+            .rxReadFile("build-info.json")
+            .map(Buffer::toJsonObject)
+            .subscribe(json -> response.end(json.getString("version")), routingContext::fail);
     }
 
     private void handleHealtchCheck(RoutingContext routingContext){
