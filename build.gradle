@@ -33,8 +33,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-mainClassName = 'io.vertx.core.Launcher'
-def mainVerticleName = 'org.lordofthejars.villains.crimes.CrimesVerticle'
+def runner = 'org.lordofthejars.villains.crimes.CrimesVerticle'
 
 // Vert.x watches for file changes in all subdirectories
 // of src/ but only for files with .java extension
@@ -48,15 +47,31 @@ if (System.getProperty("os.name").toLowerCase().contains("windows")) {
     doOnChange = './gradlew classes'
 }
 
-run {
-    args = ['run', mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$mainClassName", "--on-redeploy=$doOnChange"]
+task exec(type:JavaExec) {
+    classpath sourceSets.main.runtimeClasspath
+    main = "io.vertx.core.Launcher"
+    args = ["run", "--redeploy=$watchForChange", "--launcher-class=$runner", "--on-redeploy=$doOnChange"]
+}
+
+task createBuildInfoFile {
+    doLast {
+        def buildInfoFile = new File("$buildDir/build-info.properties")
+        Properties props = new Properties()
+        props.setProperty('version', project.version.toString())
+        props.store(buildInfoFile.newWriter(), null)
+    }
 }
 
 shadowJar {
-    archiveName = "crimes-service-${version}.jar"
-    manifest {
-        attributes 'Main-Verticle': mainVerticleName
+    dependsOn createBuildInfoFile
+
+    from(buildDir) {
+        include 'build-info.properties'
+        into('.')
     }
+    mainClassName = runner
+    archiveName = "crimes-service-${version}.jar"
+
     mergeServiceFiles {
         include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
     }

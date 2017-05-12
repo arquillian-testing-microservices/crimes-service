@@ -2,6 +2,7 @@ package org.lordofthejars.villains.crimes;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rx.java.RxHelper;
@@ -12,14 +13,25 @@ import io.vertx.rxjava.ext.web.Router;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import io.vertx.rxjava.ext.web.handler.BodyHandler;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class CrimesVerticle extends AbstractVerticle {
 
     private JDBCClient jdbcClient;
+    private Properties buildProperties = new Properties();
+
+    public static void main(String args[]) {
+        Vertx vertx = Vertx.vertx();
+        vertx.deployVerticle(CrimesVerticle.class.getName());
+    }
 
     @Override
     public void start(Future<Void> fut) {
+
+        loadBuildInfo();
 
         jdbcClient = JDBCClient.createShared(vertx, new JsonObject()
             .put("url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1")
@@ -45,13 +57,29 @@ public class CrimesVerticle extends AbstractVerticle {
                 Router router = Router.router(vertx);
                 router.route().handler(BodyHandler.create());
                 router.get("/crimes/:villain").handler(this::handleGetCrimes);
-                router.get("/healthz").handler(this::handleHeatchCheck);
+                router.get("/health").handler(this::handleHealtchCheck);
+                router.get("/version").handler(this::handleGetVersion);
                 return vertx.createHttpServer().requestHandler(router::accept).rxListen(8080);
             })
             .subscribe(RxHelper.toSubscriber(fut.mapEmpty()));
     }
 
-    private void handleHeatchCheck(RoutingContext routingContext){
+    private void loadBuildInfo() {
+        final InputStream buildInfo = CrimesVerticle.class.getResourceAsStream("/build-info.properties");
+        if (buildInfo != null) {
+            try {
+                buildProperties.load(buildInfo);
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void handleGetVersion(RoutingContext routingContext) {
+        HttpServerResponse response = routingContext.response();
+        response.setStatusCode(200).putHeader("content-type", "text/plain").end(this.buildProperties.containsKey("version") ? this.buildProperties.getProperty("version") : "");
+    }
+
+    private void handleHealtchCheck(RoutingContext routingContext){
         HttpServerResponse response = routingContext.response();
         response.setStatusCode(200).end();
     }
