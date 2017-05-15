@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.rx.java.RxHelper;
 import io.vertx.rxjava.core.AbstractVerticle;
@@ -14,9 +15,6 @@ import io.vertx.rxjava.ext.web.Router;
 import io.vertx.rxjava.ext.web.RoutingContext;
 import io.vertx.rxjava.ext.web.handler.BodyHandler;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class CrimesVerticle extends AbstractVerticle {
@@ -83,7 +81,7 @@ public class CrimesVerticle extends AbstractVerticle {
         } else {
             jdbcClient.rxGetConnection()
                 .flatMap(connection ->
-                    connection.rxQuery("SELECT name, villain, wiki FROM crime")
+                    connection.rxQueryWithParams("SELECT name, villain, wiki FROM crime WHERE villain=?", new JsonArray().add(villainName))
                         .map(resultSet -> resultSet.getRows().stream().map(Crime::new).collect(Collectors.toList()))
                         .doAfterTerminate(connection::close))
                 .subscribe(crimes -> {

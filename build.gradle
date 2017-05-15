@@ -96,3 +96,7 @@ task buildImage(type: DockerBuildImage) {
     inputDir = project.rootDir
     tag = "crimes:${project.version}"
 }
+
+task listFiles(type: Exec) {
+    commandLine 'ls'
+}
