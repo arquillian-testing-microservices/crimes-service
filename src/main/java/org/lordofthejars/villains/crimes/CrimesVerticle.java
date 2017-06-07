@@ -57,7 +57,8 @@ public class CrimesVerticle extends AbstractVerticle {
                 router.get("/version").handler(this::handleGetVersion);
                 return vertx.createHttpServer().requestHandler(router::accept).rxListen(8080);
             })
-            .subscribe(RxHelper.toSubscriber(fut.mapEmpty()));
+            .toCompletable()
+            .subscribe(RxHelper.toSubscriber(fut));
     }
 
     private void handleGetVersion(RoutingContext routingContext) {
