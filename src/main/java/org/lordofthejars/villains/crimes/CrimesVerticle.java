@@ -45,7 +45,9 @@ public class CrimesVerticle extends AbstractVerticle {
                     connection.rxExecute("insert into crime values(1, 'Moon', 'Gru', 'https://en.wikipedia" +
                         ".org/wiki/Moon'), "
                         + "(2, 'Times Square JumboTron', 'Gru', 'https://en.wikipedia.org/wiki/One_Times_Square'), "
-                        + "(3, 'Kryptonite', 'Lex Luthor', 'https://en.wikipedia.org/wiki/Kryptonite')"
+                        + "(3, 'Kryptonite', 'Lex Luthor', 'https://en.wikipedia.org/wiki/Kryptonite'), "
+                        + "(4, 'Gold', 'Jack Sparrow', 'https://en.wikipedia.org/wiki/Gold'), "
+                        + "(5, 'Smurfs', 'Gargamel', 'https://en.wikipedia.org/wiki/The_Smurfs') "
                     )
                 )
                 .doAfterTerminate(connection::close))
