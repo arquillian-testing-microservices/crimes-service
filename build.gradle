@@ -104,30 +104,30 @@ task buildImage(type: DockerBuildImage) {
     tag = "${rootProject.name}:${project.version}"
 }
 
-task patchNewVersion(type: Exec) {
-    dependsOn buildImage
-
-    commandLine "oc patch dc ${rootProject.name} --type=json -p='[{\"op\": \"replace\", \"path\":\"/spec/template/spec/containers/0/image\",\"value\": \"${rootProject.name}:${project.version}\" }]'"
-
-    standardOutput = new ByteArrayOutputStream()
-
-    ext.output = {
-        return standardOutput.toString()
-    }
-}
 
 task deployNewVersion(type: Exec) {
-    dependsOn patchNewVersion
+    dependsOn buildImage
 
-    commandLine ""
+    commandLine "./patchVersion.sh", "${project.version}"
 
     standardOutput = new ByteArrayOutputStream()
 
     ext.output = {
         return standardOutput.toString()
     }
-
 }
+
+task printInfo(type: Exec) {
+    commandLine "oc", "describe", "dc", "crimes"
+
+    standardOutput = new ByteArrayOutputStream()
+
+    doLast {
+        println standardOutput
+    }
+}
+
+deployNewVersion.finalizedBy printInfo
 
 task rollbackToDeployment(type: Exec) {
 
