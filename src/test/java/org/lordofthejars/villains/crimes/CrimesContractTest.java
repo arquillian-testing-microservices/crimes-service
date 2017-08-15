@@ -17,7 +17,7 @@ import static org.arquillian.algeron.pact.provider.assertj.PactProviderAssertion
 
 @RunWith(Arquillian.class)
 @Provider("crimes")
-@ContractsFolder("/tmp/crimescontract")
+@ContractsFolder("~/crimescontract")
 public class CrimesContractTest {
 
     @ArquillianResource
