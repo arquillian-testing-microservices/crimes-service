@@ -5,12 +5,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
+//1. Runner
+//2. Provider name
+//3. Defines contract location
 public class CrimesContractTest {
 
 
     private static Vertx vertx;
 
+    //4. Set http client to replay
+
+
+    @Test
+    public void should_validate_contract() {
+        //5. Pact Provider assertion
+    }
 
     private URL getCrimesServer() {
         try {
