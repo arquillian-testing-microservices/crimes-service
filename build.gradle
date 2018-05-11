@@ -42,6 +42,14 @@ dependencyManagement {
     }
 }
 
+tasks.withType(Test) { 
+  testLogging {
+    exceptionFormat "full"
+    events "started", "skipped", "passed", "failed"
+    showStandardStreams true
+  }
+}
+
 dependencies {
     compile "io.vertx:vertx-core:${project.ext.vertxVersion}"
     compile "io.vertx:vertx-web:${project.ext.vertxVersion}"
